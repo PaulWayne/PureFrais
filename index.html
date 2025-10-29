@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Purefrais - Société de Nettoyage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-dark-blue': '#0A2540',
+              'brand-green': '#C4F271',
+              'brand-teal': '#86D5CB',
+              'brand-red': '#D94A56',
+            },
+            fontFamily: {
+              sans: ['Jost', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^11.3.11",
+    "next/": "https://aistudiocdn.com/next@^16.0.1/",
+    "next": "https://aistudiocdn.com/next@^16.0.1",
+    "tailwindcss": "https://aistudiocdn.com/tailwindcss@^4.1.16"
+  }
+}
+</script>
+<style>
+  body {
+    font-family: 'Jost', sans-serif;
+  }
+  .bubble-bg {
+    background-color: #f0f8ff;
+    background-image: 
+      radial-gradient(circle at 15% 15%, hsla(0,0%,100%,.3) 40px, transparent 41px),
+      radial-gradient(circle at 85% 20%, hsla(0,0%,100%,.4) 120px, transparent 121px),
+      radial-gradient(circle at 30% 85%, hsla(0,0%,100%,.3) 90px, transparent 91px),
+      radial-gradient(circle at 90% 90%, hsla(0,0%,100%,.2) 70px, transparent 71px),
+      radial-gradient(circle at 50% 50%, hsla(0,0%,100%,.3) 150px, transparent 151px),
+      radial-gradient(circle at 5% 90%, hsla(0,0%,100%,.2) 30px, transparent 31px),
+      radial-gradient(circle at 70% 70%, hsla(0,0%,100%,.25) 80px, transparent 81px);
+    background-position: center;
+    background-size: cover;
+  }
+</style>
+</head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
