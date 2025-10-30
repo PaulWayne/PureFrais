@@ -134,16 +134,21 @@ const QuoteForm: React.FC = () => {
     const currentConditionalSection = prestation ? form.conditionalSections[prestation] : null;
 
     return (
-        <div className="max-w-3xl mx-auto bg-white p-8 lg:p-12 rounded-2xl shadow-lg">
+        <div className="max-w-4xl mx-auto bg-white p-8 lg:p-12 rounded-2xl shadow-lg">
             <div className="text-center mb-10">
+                 <div className="inline-block bg-brand-teal text-white p-4 rounded-full mb-4">
+                    <i className="fas fa-clipboard-list text-3xl"></i>
+                </div>
                 <h2 className="text-3xl lg:text-4xl font-bold text-brand-dark-blue">{form.title}</h2>
-                <p className="text-gray-600 mt-2">{form.description}</p>
+                <p className="text-gray-600 mt-2 max-w-xl mx-auto">{form.description}</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 {renderField(prestationField)}
                 <hr className="my-8"/>
-                {commonFields.map((field: any) => renderField(field as Field))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                    {commonFields.map((field: any) => renderField(field as Field))}
+                </div>
                 <AnimatePresence mode="wait">
                     {currentConditionalSection && (
                         <motion.div
