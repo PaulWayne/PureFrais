@@ -163,7 +163,7 @@ export default function TeamMemberPage({ params }: { params: { id: string } }) {
               </div>
             </section>
             
-             <style jsx>{`
+             <style>{`
                 .social-icon {
                     width: 40px;
                     height: 40px;

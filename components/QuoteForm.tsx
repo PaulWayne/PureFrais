@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { formSchema } from '@/lib/formSchema';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { formSchema as formDefinition } from '@/lib/formSchema';
+import { quoteFormSchema, QuoteFormData } from '@/lib/quoteFormValidator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -10,7 +13,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Button } from '@/components/ui/Button';
 import { Label } from '@/components/ui/Label';
 
-// Types
+// Types from form schema definition
 type Option = { value: string; label: string };
 type Field = {
   id: string;
@@ -20,101 +23,43 @@ type Field = {
   required?: boolean;
   options?: Option[];
 };
-type FieldGroup = { id: string; group: Field[] };
 
-const { form } = formSchema;
+const { form } = formDefinition;
 
-const initialFormData = () => {
-  const data: { [key: string]: any } = {};
-  form.fields.forEach(field => {
-    if ('group' in field) {
-      (field as any).group.forEach((subField: any) => { data[subField.id] = ''; });
-    } else {
-      data[(field as any).id] = '';
-    }
-  });
-  Object.values(form.conditionalSections).forEach((section: any) => {
-    section.fields.forEach((field: any) => { data[field.id] = ''; });
-  });
-  form.finalFields.forEach(field => {
-    data[field.id] = field.type === 'checkbox' ? false : '';
-  });
-  return data;
+const defaultValues: Partial<QuoteFormData> = {
+    prestation: undefined,
+    nom: '', email: '', telephone: '', localisation: '', message: '',
+    accept_rgpd: false, type_nettoyage: '', superficie: '', type_intervention: '',
+    date_souhaitee: '', type_local: '', nombre_hottes: undefined, type_etablissement: '',
+    longueur: '', encrassement: '', derniere_visite: '', type_lieu: '', type_vitres: '',
+    surface: '', accessibilite: '', frequence: '',
 };
 
+
 const QuoteForm: React.FC = () => {
-    const [formData, setFormData] = useState<{ [key: string]: any }>(initialFormData());
-    const [prestation, setPrestation] = useState('');
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-    const handleChange = (id: string, value: any) => {
-        setFormData(prev => ({ ...prev, [id]: value }));
-        if (id === 'prestation') {
-            setPrestation(value);
-        }
-        if (errors[id]) {
-            setErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[id];
-                return newErrors;
-            });
-        }
-    };
-    
-    const validate = () => {
-        const newErrors: { [key: string]: string } = {};
-        const requiredFields: Field[] = [];
+    const {
+        register,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<QuoteFormData>({
+        resolver: zodResolver(quoteFormSchema),
+        defaultValues,
+    });
 
-        // Main prestation field
-        const prestationField = form.fields.find(f => f.id === 'prestation') as Field;
-        if(prestationField.required) requiredFields.push(prestationField);
+    const prestation = watch('prestation');
 
-        // Common fields
-        const commonFields = form.fields.find(f => f.id === 'commonFields') as any;
-        // FIX: Cast field to `Field` to match the `requiredFields` array type.
-        commonFields.group.forEach((f: any) => { if (f.required) requiredFields.push(f as Field) });
-
-        // Conditional fields
-        if (prestation && form.conditionalSections[prestation]) {
-            // FIX: Cast field to `Field` to match the `requiredFields` array type.
-            form.conditionalSections[prestation].fields.forEach((f: any) => { if (f.required) requiredFields.push(f as Field) });
-        }
-
-        // Final fields
-        // FIX: Cast field to `Field` to match the `requiredFields` array type.
-        form.finalFields.forEach(f => { if (f.required) requiredFields.push(f as Field) });
-
-        requiredFields.forEach(field => {
-            if (field.type === 'checkbox' && !formData[field.id]) {
-                newErrors[field.id] = 'Vous devez accepter les conditions.';
-            } else if (typeof formData[field.id] === 'string' && !formData[field.id].trim()) {
-                newErrors[field.id] = 'Ce champ est requis.';
-            }
-        });
+    const onSubmit = async (data: QuoteFormData) => {
+        setStatus('idle');
         
-        // Email validation
-        if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
-            newErrors.email = "L'adresse email n'est pas valide.";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    }
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!validate()) {
-            return;
-        }
-        
-        setStatus('loading');
-        
-        const allData = { ...formData };
         const conditionalFieldsData: { [key: string]: any } = {};
-        if (prestation && form.conditionalSections[prestation]) {
-            form.conditionalSections[prestation].fields.forEach(field => {
-                conditionalFieldsData[field.id] = formData[field.id];
+        const prestationKey = data.prestation as keyof typeof form.conditionalSections;
+        if (prestationKey && form.conditionalSections[prestationKey]) {
+            form.conditionalSections[prestationKey].fields.forEach(field => {
+                conditionalFieldsData[field.id] = data[field.id as keyof QuoteFormData];
             });
         }
 
@@ -124,11 +69,10 @@ const QuoteForm: React.FC = () => {
         for (const key in format) {
             const template = format[key];
             const fieldId = template.replace(/{{|}}/g, '');
-
             if (fieldId === 'conditionalSectionFields') {
                 payload[key] = conditionalFieldsData;
             } else {
-                payload[key] = allData[fieldId] || '';
+                payload[key] = data[fieldId as keyof QuoteFormData] || '';
             }
         }
 
@@ -138,53 +82,51 @@ const QuoteForm: React.FC = () => {
             const response = await fetch(form.submission.endpoint, {
                 method: form.submission.method as 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: payload }) // Strapi often expects a `data` wrapper
+                body: JSON.stringify({ data: payload })
             });
 
             if (!response.ok) throw new Error('Network response was not ok');
             
             setStatus('success');
-            setFormData(initialFormData());
-            setPrestation('');
-            setErrors({});
+            reset();
         } catch (error) {
             console.error('Submission failed', error);
             setStatus('error');
         }
     };
-    
+
     const renderField = (field: Field) => {
-      const { id, type, label, placeholder, required, options } = field;
-      const value = formData[id];
-      const error = errors[id];
+        const { id, type, label, placeholder, required, options } = field;
+        const error = errors[id as keyof QuoteFormData];
 
-      const fieldComponent = () => {
-        switch(type) {
-            case 'text':
-            case 'email':
-            case 'tel':
-            case 'number':
-            case 'date':
-                return <Input id={id} name={id} type={type} placeholder={placeholder} required={required} value={value} onChange={e => handleChange(id, e.target.value)} aria-invalid={!!error} />;
-            case 'select':
-                return <Select id={id} name={id} placeholder={placeholder} required={required} options={options || []} value={value} onChange={e => handleChange(id, e.target.value)} aria-invalid={!!error} />;
-            case 'textarea':
-                return <Textarea id={id} name={id} placeholder={placeholder} required={required} value={value} onChange={e => handleChange(id, e.target.value)} aria-invalid={!!error} />;
-            case 'checkbox':
-                return <Checkbox id={id} name={id} label={label} required={required} checked={!!value} onChange={e => handleChange(id, e.target.checked)} aria-invalid={!!error} />;
-            default:
-                return null;
-        }
-      }
+        const fieldComponent = () => {
+            const fieldName = id as keyof QuoteFormData;
+            switch(type) {
+                case 'text':
+                case 'email':
+                case 'tel':
+                case 'number':
+                case 'date':
+                    return <Input id={id} type={type} placeholder={placeholder} {...register(fieldName)} aria-invalid={!!error} />;
+                case 'select':
+                    return <Select id={id} placeholder={placeholder} options={options || []} {...register(fieldName)} aria-invalid={!!error} />;
+                case 'textarea':
+                    return <Textarea id={id} placeholder={placeholder} {...register(fieldName)} aria-invalid={!!error} />;
+                case 'checkbox':
+                    return <Checkbox id={id} label={label} required={required} {...register(fieldName)} aria-invalid={!!error} />;
+                default:
+                    return null;
+            }
+        };
 
-      return (
-        <div key={id} className="mb-6">
-          {type !== 'checkbox' && <Label htmlFor={id} required={required}>{label}</Label>}
-          {fieldComponent()}
-          {error && <p className="text-sm text-brand-red mt-1" id={`${id}-error`}>{error}</p>}
-        </div>
-      );
-    }
+        return (
+            <div key={id} className="mb-6">
+                {type !== 'checkbox' && <Label htmlFor={id} required={required}>{label}</Label>}
+                {fieldComponent()}
+                {error && <p className="text-sm text-brand-red mt-1" id={`${id}-error`}>{error.message as string}</p>}
+            </div>
+        );
+    };
     
     const prestationField = form.fields.find(f => f.id === 'prestation') as Field;
     const commonFields = (form.fields.find(f => f.id === 'commonFields') as any).group;
@@ -198,14 +140,10 @@ const QuoteForm: React.FC = () => {
                 <p className="text-gray-600 mt-2">{form.description}</p>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
                 {renderField(prestationField)}
-                
                 <hr className="my-8"/>
-
-                {/* FIX: Cast field to `Field` to satisfy the `renderField` function's type requirement. */}
                 {commonFields.map((field: any) => renderField(field as Field))}
-
                 <AnimatePresence mode="wait">
                     {currentConditionalSection && (
                         <motion.div
@@ -217,50 +155,32 @@ const QuoteForm: React.FC = () => {
                         >
                             <hr className="my-8"/>
                             <h3 className="text-xl font-bold text-brand-dark-blue mb-6">{currentConditionalSection.label}</h3>
-                            {/* FIX: Cast field to `Field` to satisfy the `renderField` function's type requirement. */}
                             {currentConditionalSection.fields.map((field: any) => renderField(field as Field))}
                         </motion.div>
                     )}
                 </AnimatePresence>
-
                 <hr className="my-8"/>
-                
-                {/* FIX: Cast field to `Field` to satisfy the `renderField` function's type requirement. */}
                 {finalFields.map(field => renderField(field as Field))}
-                
                 <div className="mt-8">
-                    <Button type="submit" isLoading={status === 'loading'}>
+                    <Button type="submit" isLoading={isSubmitting}>
                         {form.submitLabel}
                     </Button>
                 </div>
-                
                 <AnimatePresence>
                     {status === 'success' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            className="mt-4 text-center p-4 bg-green-100 text-green-800 rounded-lg"
-                            role="alert"
-                        >
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="mt-4 text-center p-4 bg-green-100 text-green-800 rounded-lg" role="alert">
                             Merci ! Votre demande de devis a été envoyée avec succès. Nous vous contacterons bientôt.
                         </motion.div>
                     )}
                      {status === 'error' && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            className="mt-4 text-center p-4 bg-red-100 text-red-800 rounded-lg"
-                            role="alert"
-                        >
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="mt-4 text-center p-4 bg-red-100 text-red-800 rounded-lg" role="alert">
                             Une erreur est survenue. Veuillez réessayer plus tard ou nous contacter directement.
                         </motion.div>
                     )}
                 </AnimatePresence>
             </form>
         </div>
-    )
+    );
 };
 
 export default QuoteForm;
