@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 
 const QuoteCtaSection: React.FC = () => {
@@ -15,7 +16,7 @@ const QuoteCtaSection: React.FC = () => {
         <p className="text-xl lg:text-2xl mb-6">
           Appelez-nous maintenant : <a href="tel:+33123456789" className="font-bold text-brand-green hover:underline">+33 1 23 45 67 89</a>
         </p>
-        <a href="#" className="bg-brand-teal text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all shadow-xl text-lg">
+        <a href="/devis" className="bg-brand-teal text-white font-bold py-3 px-8 rounded-full hover:bg-opacity-90 transition-all shadow-xl text-lg">
           DEMANDER UN DEVIS
         </a>
       </div>

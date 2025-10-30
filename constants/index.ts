@@ -7,6 +7,7 @@ export const navLinks = [
   { name: 'Démo', href: '/demo' },
   { name: 'Blog', href: '/blog' },
   { name: 'Boutique', href: '#' },
+  { name: 'Demander un devis', href: '/devis' },
   { name: 'Contacts', href: '/contacts' },
 ];
 
