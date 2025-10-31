@@ -17,6 +17,7 @@ export const quoteFormSchema = z
     superficie: z.string().optional().or(z.literal("")),
     type_intervention: z.string().optional().or(z.literal("")),
     date_souhaitee: z.string().optional().or(z.literal("")),
+    date_precise: z.string().optional().or(z.literal("")),
 
     // Local pro
     type_local: z.string().optional().or(z.literal("")),
@@ -164,6 +165,17 @@ export const quoteFormSchema = z
           });
         }
         break;
+    }
+    if (
+      data.prestation === "restaurant" &&
+      data.date_souhaitee === "date" &&
+      !data.date_precise
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Veuillez choisir une date.",
+        path: ["date_precise"],
+      });
     }
   });
 

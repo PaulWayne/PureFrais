@@ -83,7 +83,7 @@ const QuoteForm: React.FC = () => {
   const prestation = watch(
     "prestation"
   ) as keyof typeof form.conditionalSections;
-
+  const dateSouhaitee = watch("date_souhaitee");
   const onSubmit = async (data: QuoteFormData) => {
     setStatus("idle");
 
@@ -235,7 +235,7 @@ const QuoteForm: React.FC = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-          {commonFields.map((field: any) => renderField(field as Field))}
+          {commonFields.map((field: Field) => renderField(field as Field))}
         </div>
         {renderField(prestationField)}
 
@@ -251,16 +251,49 @@ const QuoteForm: React.FC = () => {
               <h3 className="text-xl font-bold text-brand-dark-blue mb-6">
                 {currentConditionalSection.label}
               </h3>
-              {currentConditionalSection.fields.map((field: any) =>
-                renderField(field as Field)
-              )}
+              {currentConditionalSection.fields.map((field: any) => {
+                if (field.id === "date_souhaitee") {
+                  return (
+                    <React.Fragment key={field.id}>
+                      {renderField(field)}
+                      <AnimatePresence>
+                        {dateSouhaitee === "date" && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                            animate={{
+                              opacity: 1,
+                              height: "auto",
+                              marginTop: "-0.75rem",
+                            }}
+                            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="overflow-hidden"
+                          >
+                            {renderField({
+                              id: "date_precise",
+                              type: "date",
+                              label: "Date précise",
+                              required: true,
+                            } as Field)}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </React.Fragment>
+                  );
+                }
+                return renderField(field as Field);
+              })}
             </motion.div>
           )}
         </AnimatePresence>
         <hr className="my-8" />
         {finalFields.map((field) => renderField(field as Field))}
         <div className="mt-8">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="bg-brand-teal text-white font-bold py-4 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-lg"
+          >
             {form.submitLabel}
           </Button>
         </div>
