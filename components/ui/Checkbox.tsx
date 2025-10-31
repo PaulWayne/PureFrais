@@ -1,25 +1,30 @@
-import React from 'react';
+"use client"
 
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  // FIX: Explicitly define 'id' as it's required for the label's htmlFor and was causing a type error.
-  id: string;
-}
+import * as React from "react"
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
+import { Check } from "lucide-react"
 
-export const Checkbox = ({ id, label, required, ...props }: CheckboxProps) => (
-  <div className="flex items-start">
-    <input
-      id={id}
-      type="checkbox"
-      {...props}
-      // FIX: Pass the 'required' prop to the underlying input. It was destructured but not used.
-      required={required}
-      className="h-5 w-5 rounded border-gray-300 text-brand-teal focus:ring-brand-teal mt-0.5"
-    />
-    <div className="ml-3 text-sm">
-       <label htmlFor={id} className="font-medium text-gray-700">
-          {label} {required && <span className="text-brand-red">*</span>}
-       </label>
-    </div>
-  </div>
-);
+import { cn } from "@/lib/utils"
+
+const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <CheckboxPrimitive.Root
+    ref={ref}
+    className={cn(
+      "grid place-content-center peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      className
+    )}
+    {...props}
+  >
+    <CheckboxPrimitive.Indicator
+      className={cn("grid place-content-center text-current")}
+    >
+      <Check className="h-4 w-4" />
+    </CheckboxPrimitive.Indicator>
+  </CheckboxPrimitive.Root>
+))
+Checkbox.displayName = CheckboxPrimitive.Root.displayName
+
+export { Checkbox }
