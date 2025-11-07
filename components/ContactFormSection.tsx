@@ -1,84 +1,259 @@
+"use client";
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
+import { ContactFormData, contactFormSchema } from "@/lib/contactFormValidator";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { motion, AnimatePresence } from "framer-motion";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Checkbox } from "./ui/checkbox";
+import { Button } from "./ui/button";
+import { CompanyInformation } from "@/types/contact";
+import { getStrapiURL } from "@/lib/utils";
 
-import React from 'react';
+const baseUri = getStrapiURL();
 
-const ContactInput = ({ icon, type, placeholder, name }: { icon: string, type: string, placeholder: string, name: string }) => (
-    <div className="flex items-center border-b border-gray-200 py-3 focus-within:border-brand-teal transition-colors">
-        <span className="text-gray-400 mr-4 w-5 text-center">
-            <i className={`fas fa-${icon}`}></i>
-        </span>
-        <input 
-            type={type} 
-            name={name}
-            placeholder={placeholder}
-            className="w-full bg-transparent focus:outline-none placeholder-gray-500"
-        />
-    </div>
-);
+type Props = {
+  info: CompanyInformation;
+};
+const defaultValues: ContactFormData = {
+  fullname: "",
+  email: "",
+  phone: "",
+  subject: "",
+  message: "",
+  agree: false,
+};
 
-const ContactFormSection: React.FC = () => {
+const ContactFormSection: React.FC<Props> = ({ info }) => {
+  const { address, email, phone } = info;
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues,
+  });
+
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
+  const onSubmit = async (data: ContactFormData) => {
+    setStatus("idle");
+    if (!executeRecaptcha) {
+      setStatus("error");
+      return;
+    }
+    try {
+      const recaptchaToken = await executeRecaptcha("contact_form");
+      const url = new URL("/api/contacts", baseUri);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: {
+            ...data,
+            recaptchaToken,
+          },
+        }),
+      });
+      if (!response.ok) throw new Error("Network response was not ok");
+      setStatus("success");
+      reset();
+    } catch (error) {
+      console.error("Submission failed", error);
+      setStatus("error");
+    }
+  };
+
   return (
-    <section className="py-20 lg:py-28 bg-white">
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
-          
-          <div className="lg:col-span-4">
-            <h2 className="text-3xl font-bold text-brand-dark-blue mb-6">Coordonnées</h2>
-            <div className="space-y-4 text-gray-700">
-              <p>15 Rue de la République, Bureau 478<br/>Paris, 75001</p>
-              <p>info@purefrais.com</p>
-              <p className="text-2xl font-bold text-brand-dark-blue mt-4">+33 1 23 45 67 89</p>
+    <GoogleReCaptchaProvider
+      reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+    >
+      <section className="py-10 lg:py-15 bg-white">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-4">
+              <h2 className="text-3xl font-bold text-brand-dark-blue mb-6">
+                Coordonnées
+              </h2>
+              <div className="space-y-4 text-gray-700">
+                <p>{address}</p>
+                <p>{email}</p>
+                <p className="text-2xl font-bold text-brand-dark-blue mt-4">
+                  {phone}
+                </p>
+              </div>
+              <div className="flex space-x-4 mt-8">
+                <a
+                  href="#"
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-brand-dark-blue hover:text-white transition-colors"
+                >
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-brand-dark-blue hover:text-white transition-colors"
+                >
+                  <i className="fab fa-twitter"></i>
+                </a>
+                <a
+                  href="#"
+                  className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-brand-dark-blue hover:text-white transition-colors"
+                >
+                  <i className="fab fa-instagram"></i>
+                </a>
+              </div>
             </div>
-            <div className="flex space-x-4 mt-8">
-              <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-brand-dark-blue hover:text-white transition-colors">
-                <i className="fab fa-facebook-f"></i>
-              </a>
-              <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-brand-dark-blue hover:text-white transition-colors">
-                <i className="fab fa-twitter"></i>
-              </a>
-              <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-brand-dark-blue hover:text-white transition-colors">
-                <i className="fab fa-instagram"></i>
-              </a>
-            </div>
-          </div>
 
-          <div className="lg:col-span-8">
-            <form>
-              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 mb-6">
-                <ContactInput icon="user" type="text" name="name" placeholder="Nom" />
-                <ContactInput icon="envelope" type="email" name="email" placeholder="Adresse e-mail" />
-                <ContactInput icon="phone" type="tel" name="phone" placeholder="Téléphone" />
-                <ContactInput icon="bookmark" type="text" name="subject" placeholder="Sujet" />
-              </div>
-              <div className="mb-8">
-                 <div className="flex items-start border-b border-gray-200 py-3 focus-within:border-brand-teal transition-colors">
-                    <span className="text-gray-400 mr-4 w-5 text-center mt-1">
-                        <i className="fas fa-pen"></i>
-                    </span>
-                    <textarea 
-                      name="message" 
-                      placeholder="Comment pouvons-nous vous aider ? N'hésitez pas à nous contacter !" 
-                      rows={3}
-                      className="w-full bg-transparent focus:outline-none resize-none placeholder-gray-500"
-                    ></textarea>
+            <div className="lg:col-span-8">
+              <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4 mb-4">
+                  <div>
+                    <Label htmlFor="fullname">Nom</Label>
+                    <Input
+                      id="fullname"
+                      type="text"
+                      placeholder="Ex : Jean Dupont"
+                      {...register("fullname")}
+                    />
+                    {errors.fullname && (
+                      <p className="text-sm text-brand-red mt-1">
+                        {errors.fullname.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Adresse e-mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Ex : contact@exemple.com"
+                      {...register("email")}
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-brand-red mt-1">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Téléphone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Ex : 0601020304"
+                      {...register("phone")}
+                    />
+                    {errors.phone && (
+                      <p className="text-sm text-brand-red mt-1">
+                        {errors.phone.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="subject">Sujet</Label>
+                    <Input
+                      id="subject"
+                      type="text"
+                      placeholder="Sujet de votre message"
+                      {...register("subject")}
+                    />
+                    {errors.subject && (
+                      <p className="text-sm text-brand-red mt-1">
+                        {errors.subject.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                <button type="submit" className="bg-brand-teal text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-md w-full sm:w-auto">
+                <div className="mb-6">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Comment pouvons-nous vous aider ? N'hésitez pas à nous contacter !"
+                    {...register("message")}
+                  />
+                  {errors.message && (
+                    <p className="text-sm text-brand-red mt-1">
+                      {errors.message.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-8">
+                  <Label>
+                    {
+                      <>
+                        J'accepte que mes données soient{" "}
+                        <a
+                          href="#"
+                          className="underline hover:text-brand-dark-blue"
+                        >
+                          collectées et stockées
+                        </a>
+                        .
+                      </>
+                    }
+                  </Label>
+                  <Checkbox
+                    id="agree-contact"
+                    checked={!!watch("agree")}
+                    onCheckedChange={(val) =>
+                      setValue("agree", val === true, { shouldValidate: true })
+                    }
+                  />
+                  {errors.agree && (
+                    <p className="text-sm text-brand-red mt-1">
+                      {errors.agree.message}
+                    </p>
+                  )}
+                </div>
+
+                <Button type="submit" disabled={isSubmitting}>
                   Envoyer le Message
-                </button>
-                <div className="flex items-center self-start sm:self-center">
-                  <input type="checkbox" id="agree-contact" name="agree" className="w-4 h-4 text-brand-teal bg-gray-100 border-gray-300 rounded focus:ring-brand-teal" />
-                  <label htmlFor="agree-contact" className="ml-2 text-sm text-gray-600">
-                    J'accepte que mes données soient <a href="#" className="underline hover:text-brand-dark-blue">collectées et stockées</a>.
-                  </label>
-                </div>
-              </div>
-            </form>
-          </div>
+                </Button>
 
+                <AnimatePresence>
+                  {status === "success" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="mt-4 text-center p-4 bg-green-100 text-green-800 rounded-lg"
+                      role="alert"
+                    >
+                      Merci ! Votre message a été envoyé avec succès. Nous vous
+                      contacterons bientôt.
+                    </motion.div>
+                  )}
+                  {status === "error" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="mt-4 text-center p-4 bg-red-100 text-red-800 rounded-lg"
+                      role="alert"
+                    >
+                      Une erreur est survenue. Veuillez réessayer plus tard ou
+                      nous contacter directement.
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </form>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </GoogleReCaptchaProvider>
   );
 };
 

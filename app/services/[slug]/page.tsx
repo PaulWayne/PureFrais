@@ -1,7 +1,6 @@
-import React from "react";
-import { notFound } from "next/navigation";
-import { services } from "@/constants";
+import fetchContentType from "@/actions/fetch-content-type";
 import { ServiceDetail } from "@/components/ServiceDetail";
+import { notFound } from "next/navigation";
 
 export default async function ServiceDetailPage({
   params,
@@ -9,7 +8,12 @@ export default async function ServiceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const service = services.find((s) => s.slug === slug);
+
+  const service = await fetchContentType(
+    "services",
+    `filters[slug]=${slug}&populate=image`,
+    true
+  );
 
   if (!service) {
     notFound();

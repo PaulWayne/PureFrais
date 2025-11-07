@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { getStrapiURL } from "@/lib/utils";
 
 // Types from form schema definition
 type Option = { value: string; label: string };
@@ -41,17 +42,18 @@ type Field = {
 const { form } = formDefinition;
 
 const defaultValues: QuoteFormData = {
-  prestation: "",
-  nom: "",
+  service: "",
+  fullname: "",
   email: "",
-  telephone: "",
+  phone: "",
   localisation: "",
   message: "",
   accept_rgpd: false,
   type_nettoyage: "",
   superficie: "",
   type_intervention: "",
-  date_souhaitee: "",
+  desired_date: "",
+  specific_date: undefined,
   type_local: "",
   nombre_hottes: undefined,
   type_etablissement: "",
@@ -80,16 +82,15 @@ const QuoteForm: React.FC = () => {
     defaultValues,
   });
 
-  const prestation = watch(
-    "prestation"
-  ) as keyof typeof form.conditionalSections;
-  const dateSouhaitee = watch("date_souhaitee");
+  const prestation = watch("service") as keyof typeof form.conditionalSections;
+  const dateSouhaitee = watch("desired_date");
+
+  console.log(errors);
   const onSubmit = async (data: QuoteFormData) => {
     setStatus("idle");
 
     const conditionalFieldsData: { [key: string]: any } = {};
-    const prestationKey =
-      data.prestation as keyof typeof form.conditionalSections;
+    const prestationKey = data.service as keyof typeof form.conditionalSections;
     if (prestationKey && form.conditionalSections[prestationKey]) {
       form.conditionalSections[prestationKey].fields.forEach((field) => {
         conditionalFieldsData[field.id] = data[field.id as keyof QuoteFormData];
@@ -98,21 +99,43 @@ const QuoteForm: React.FC = () => {
 
     const payload: { [key: string]: any } = {};
     const format = form.submission.payloadFormat as { [key: string]: string };
-
     for (const key in format) {
       const template = format[key];
       const fieldId = template.replace(/{{|}}/g, "");
-      if (fieldId === "conditionalSectionFields") {
-        payload[key] = conditionalFieldsData;
-      } else {
-        payload[key] = data[fieldId as keyof QuoteFormData] || "";
-      }
-    }
 
+      let value: any;
+
+      if (fieldId === "conditionalSectionFields") {
+        value = conditionalFieldsData;
+      } else {
+        const rawValue = data[fieldId as keyof QuoteFormData];
+
+        // Spécial pour les champs date/datetime
+        if (fieldId === "specific_date") {
+          if (
+            rawValue &&
+            typeof rawValue === "string" &&
+            rawValue.trim() !== ""
+          ) {
+            const date = new Date(rawValue);
+            if (!isNaN(date.getTime())) {
+              value = date.toISOString(); // "2025-04-20T14:30:00.000Z"
+            } else {
+              value = null;
+            }
+          } else {
+            value = null; // ← IMPORTANT : null, pas ""
+          }
+        } else {
+          value = rawValue ?? "";
+        }
+      }
+
+      payload[key] = value;
+    }
     try {
-      // NOTE: This is a mock API call. The endpoint /api/devis does not actually exist.
-      // This will result in a 404 error in the console, which is expected behavior for this example.
-      const response = await fetch(form.submission.endpoint, {
+      const url = new URL(getStrapiURL(`${form.submission.endpoint}`));
+      const response = await fetch(url, {
         method: form.submission.method as "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: payload }),
@@ -153,7 +176,7 @@ const QuoteForm: React.FC = () => {
           return (
             <Select
               onValueChange={(val) => {
-                setValue(fieldName, val, {});
+                setValue(fieldName, val, { shouldValidate: true });
               }}
             >
               <SelectTrigger>
@@ -209,9 +232,7 @@ const QuoteForm: React.FC = () => {
     );
   };
 
-  const prestationField = form.fields.find(
-    (f) => f.id === "prestation"
-  ) as Field;
+  const prestationField = form.fields.find((f) => f.id === "service") as Field;
   const commonFields = (form.fields.find((f) => f.id === "commonFields") as any)
     .group;
   const finalFields = form.finalFields;
@@ -252,7 +273,7 @@ const QuoteForm: React.FC = () => {
                 {currentConditionalSection.label}
               </h3>
               {currentConditionalSection.fields.map((field: any) => {
-                if (field.id === "date_souhaitee") {
+                if (field.id === "desired_date") {
                   return (
                     <React.Fragment key={field.id}>
                       {renderField(field)}

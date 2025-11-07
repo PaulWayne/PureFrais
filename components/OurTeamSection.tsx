@@ -3,6 +3,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import { fullTeamMembers, clients } from "@/constants";
 import Link from "next/link";
+import { HomePageTeam } from "@/types/team";
+import Image from "next/image";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -17,7 +19,12 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 },
 };
 
-const OurTeamSection: React.FC = () => {
+const OurTeamSection: React.FC<HomePageTeam> = ({
+  heading,
+  sub_heading,
+  cta,
+  members,
+}) => {
   return (
     <motion.section
       className="bg-soft-teal py-20 lg:py-28"
@@ -49,39 +56,43 @@ const OurTeamSection: React.FC = () => {
               de vos espaces
             </h2>
             <p className="text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0">
-              Notre succès repose sur une équipe de professionnels passionnés et
-              dévoués. Chaque membre est formé pour offrir un service
-              d'excellence et garantir votre entière satisfaction.
+              {sub_heading}
             </p>
-            <button className="bg-brand-teal text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-md">
-              À propos de nous
-            </button>
+            <Link
+              href={cta.URL}
+              className="bg-brand-teal text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-md"
+            >
+              {cta.text}
+            </Link>
           </motion.div>
           <motion.div
             className="grid grid-cols-2 gap-4"
             variants={containerVariants}
           >
-            {fullTeamMembers.map((member, index) => (
+            {members.map((member, index) => (
               <motion.div
                 key={index}
                 variants={itemVariants}
                 className="aspect-square"
               >
                 <Link
-                  href={`/team/${member.id}`}
+                  href={`/team/${member.documentId}`}
                   className="group relative block w-full h-full"
                 >
-                  <img
-                    src={member.image}
-                    alt={member.name}
+                  <Image
+                    unoptimized
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${member.image.formats.medium.url}`}
+                    alt={`${member.firstname} ${member.lastname}`}
                     className="rounded-lg shadow-lg w-full h-full object-cover"
+                    width={member.image.formats.medium.width}
+                    height={member.image.formats.medium.height}
                   />
                   <div className="absolute inset-0 bg-brand-dark-blue/70 rounded-lg flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <h3 className="text-white text-xl font-bold">
-                      {member.name}
+                      {`${member.firstname} ${member.lastname}`}{" "}
                     </h3>
                     <p className="text-brand-teal text-sm font-semibold">
-                      {member.title}
+                      {member.job}
                     </p>
                   </div>
                 </Link>

@@ -1,17 +1,14 @@
 "use client";
+import { FAQ, FAQItem } from "@/types/faq";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
-interface Faq {
-  question: string;
-  answer: string;
-}
-
-const FaqItem: React.FC<{ faq: Faq; isOpen: boolean; onClick: () => void }> = ({
-  faq,
-  isOpen,
-  onClick,
-}) => {
+const FaqItem: React.FC<{
+  faq: FAQItem;
+  isOpen: boolean;
+  onClick: () => void;
+}> = ({ faq, isOpen, onClick }) => {
   return (
     <div className="border-b border-gray-200 py-6">
       <button
@@ -54,18 +51,9 @@ const FaqItem: React.FC<{ faq: Faq; isOpen: boolean; onClick: () => void }> = ({
   );
 };
 
-interface FaqSectionProps {
-  subtitle?: string;
-  title: string;
-  faqs: Faq[];
-  image: string;
-  stat1: { number: string; text: string; label?: string };
-  stat2: { number: string; text: string; label?: string };
-}
-
-const FaqSection: React.FC<FaqSectionProps> = ({
-  subtitle,
-  title,
+const FaqSection: React.FC<FAQ> = ({
+  sub_heading,
+  heading,
   faqs,
   image,
   stat1,
@@ -92,13 +80,13 @@ const FaqSection: React.FC<FaqSectionProps> = ({
       <div className="container mx-auto px-4 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <div>
-            {subtitle && (
+            {sub_heading && (
               <p className="font-semibold text-gray-500 tracking-widest mb-2">
-                {subtitle}
+                {sub_heading}
               </p>
             )}
             <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-dark-blue leading-tight mb-8">
-              {title}
+              {heading}
             </h2>
             <div>
               {faqs.map((faq, index) => (
@@ -112,11 +100,15 @@ const FaqSection: React.FC<FaqSectionProps> = ({
             </div>
           </div>
           <div className="relative mt-10 lg:mt-0">
-            <img
-              src={image}
-              alt="Professionnel du nettoyage au travail"
-              className="rounded-lg shadow-2xl w-full"
+            <Image
+              unoptimized
+              src={`${process.env.NEXT_PUBLIC_API_URL}${image.formats.medium.url}`}
+              alt={`${image.alternativeText}`}
+              className="rounded-lg shadow-2xl  w-full h-full object-cover"
+              width={image.formats.medium.width}
+              height={image.formats.medium.height}
             />
+
             <motion.div
               className="absolute -bottom-8 left-8 bg-brand-teal text-white p-6 rounded-lg shadow-lg w-48"
               initial={{ opacity: 0, y: 20 }}
@@ -124,8 +116,8 @@ const FaqSection: React.FC<FaqSectionProps> = ({
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              {stat1.label && <p className="text-sm">{stat1.label}</p>}
-              <span className="text-5xl font-bold">{stat1.number}</span>
+              {stat1.text && <p className="text-sm">{stat1.text}</p>}
+              <span className="text-5xl font-bold">{stat1.value}</span>
               <p className="mt-1 text-sm">{stat1.text}</p>
             </motion.div>
             <motion.div
@@ -135,8 +127,8 @@ const FaqSection: React.FC<FaqSectionProps> = ({
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              {stat2.label && <p className="text-sm">{stat2.label}</p>}
-              <span className="text-5xl font-bold">{stat2.number}</span>
+              {stat2.text && <p className="text-sm">{stat2.text}</p>}
+              <span className="text-5xl font-bold">{stat2.value}</span>
               <p className="mt-1 text-sm">{stat2.text}</p>
             </motion.div>
           </div>

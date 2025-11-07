@@ -1,8 +1,10 @@
 "use client";
 import React from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import { Hero as HeroType } from "@/types/hero";
+import Link from "next/link";
 
-const Hero: React.FC = () => {
+const Hero: React.FC<HeroType> = ({ heading, sub_heading, CTAs, image }) => {
   const x = useMotionValue(200);
   const y = useMotionValue(200);
 
@@ -16,7 +18,7 @@ const Hero: React.FC = () => {
   }
 
   const title = "Un nettoyage impeccable, rapide et efficace !";
-  const titleWords = title.split(" ");
+  const titleWords = heading.split(" ");
 
   const titleContainerVariants = {
     hidden: { opacity: 0 },
@@ -45,7 +47,7 @@ const Hero: React.FC = () => {
             transition={{ duration: 0.8 }}
           >
             <p className="font-semibold text-brand-dark-blue tracking-widest mb-3">
-              FRAÎCHEUR & PROPRETÉ
+              {sub_heading}
             </p>
             <motion.h1
               className="text-5xl md:text-6xl font-extrabold text-brand-dark-blue leading-tight mb-8"
@@ -72,13 +74,15 @@ const Hero: React.FC = () => {
                 </motion.span>
               ))}
             </motion.h1>
-            <motion.button
-              className="bg-brand-teal text-white font-bold py-4 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Voir tous nos services
-            </motion.button>
+            <Link href={CTAs[0].URL}>
+              <motion.button
+                className="bg-brand-teal text-white font-bold py-4 px-8 rounded-lg hover:opacity-90 transition-opacity shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {CTAs[0].text}
+              </motion.button>
+            </Link>
           </motion.div>
 
           {/* Right Content */}
@@ -92,7 +96,7 @@ const Hero: React.FC = () => {
           >
             <motion.div className="relative" style={{ rotateX, rotateY }}>
               <img
-                src="https://storage.googleapis.com/aai-web-samples/public/user/629c4287-63a2-4a09-9061-04288015fe0b.png"
+                src={`${process.env.NEXT_PUBLIC_API_URL}${image.formats.medium.url}`}
                 alt="Nettoyeur professionnel souriant"
                 className="relative w-80 h-80 md:w-96 md:h-96 object-contain drop-shadow-2xl"
               />

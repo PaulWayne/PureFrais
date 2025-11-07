@@ -2,22 +2,22 @@ import { z } from "zod";
 
 export const quoteFormSchema = z
   .object({
-    prestation: z
+    service: z
       .string({ message: "Ce champ est requis." })
       .min(1, "Veuillez choisir une prestation."),
-    nom: z
+    fullname: z
       .string({ message: "Ce champ est requis." })
       .min(1, "Ce champ est requis."),
     email: z.email("L'adresse email n'est pas valide."),
-    telephone: z.string().optional().or(z.literal("")),
+    phone: z.string().optional().or(z.literal("")),
     localisation: z.string().optional().or(z.literal("")),
 
     // Restaurant
     type_nettoyage: z.string().optional().or(z.literal("")),
     superficie: z.string().optional().or(z.literal("")),
     type_intervention: z.string().optional().or(z.literal("")),
-    date_souhaitee: z.string().optional().or(z.literal("")),
-    date_precise: z.string().optional().or(z.literal("")),
+    desired_date: z.string().optional().or(z.literal("")),
+    specific_date: z.date().optional().or(z.literal("")),
 
     // Local pro
     type_local: z.string().optional().or(z.literal("")),
@@ -44,7 +44,7 @@ export const quoteFormSchema = z
     }),
   })
   .superRefine((data, ctx) => {
-    switch (data.prestation) {
+    switch (data.service) {
       case "restaurant":
         if (!data.type_nettoyage) {
           ctx.addIssue({
@@ -167,14 +167,14 @@ export const quoteFormSchema = z
         break;
     }
     if (
-      data.prestation === "restaurant" &&
-      data.date_souhaitee === "date" &&
-      !data.date_precise
+      data.service === "restaurant" &&
+      data.desired_date === "date" &&
+      !data.specific_date
     ) {
       ctx.addIssue({
         code: "custom",
         message: "Veuillez choisir une date.",
-        path: ["date_precise"],
+        path: ["specific_date"],
       });
     }
   });

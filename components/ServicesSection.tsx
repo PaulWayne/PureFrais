@@ -1,8 +1,8 @@
 "use client";
-import React from "react";
-import { services } from "@/constants";
+import { HoomePageService } from "@/types/service";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import React from "react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -19,10 +19,10 @@ const itemVariants = {
 
 const ServiceCard: React.FC<{
   icon: string;
-  title: string;
-  description: string;
+  heading: string;
+  sub_heading: string;
   slug: string;
-}> = ({ icon, title, description, slug }) => (
+}> = ({ icon, heading, sub_heading, slug }) => (
   <motion.div
     variants={itemVariants}
     className="bg-white p-8 rounded-lg shadow-lg text-center flex flex-col"
@@ -39,9 +39,9 @@ const ServiceCard: React.FC<{
       <i className={icon}></i>
     </div>
     <h3 className="text-xl font-bold text-brand-dark-blue mb-2 flex-grow">
-      {title}
+      {heading}
     </h3>
-    <p className="text-gray-600 mb-4">{description}</p>
+    <p className="text-gray-600 mb-4">{sub_heading}</p>
     <Link
       href={`/services/${slug}`}
       className="font-semibold text-brand-dark-blue hover:text-brand-teal transition-colors mt-auto"
@@ -51,7 +51,11 @@ const ServiceCard: React.FC<{
   </motion.div>
 );
 
-const ServicesSection: React.FC = () => {
+const ServicesSection: React.FC<HoomePageService> = ({
+  heading,
+  sub_heading,
+  services,
+}) => {
   return (
     <motion.section
       className="py-16 lg:py-24 bg-soft-teal mt-2"
@@ -67,12 +71,10 @@ const ServicesSection: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl lg:text-4xl font-bold text-brand-dark-blue mb-2">
-            Nos Services
+            {heading}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Nous offrons une gamme complète de services de nettoyage pour
-            répondre à tous vos besoins, que ce soit pour votre domicile ou
-            votre bureau.
+            {sub_heading}
           </p>
         </div>
         <motion.div
@@ -81,7 +83,7 @@ const ServicesSection: React.FC = () => {
           variants={containerVariants}
         >
           {services.map((service) => (
-            <ServiceCard key={service.title} {...service} />
+            <ServiceCard key={service.documentId} {...service} />
           ))}
         </motion.div>
       </div>
