@@ -1,7 +1,7 @@
 export const formSchema = {
   form: {
     id: "quoteForm",
-    title: "Demander un devis",
+    title: "Obtenez votre devis gratuit en moins de 2 heures",
     description:
       "Formulaire de demande de devis pour les services de nettoyage en Île-de-France.",
     submitLabel: "Obtenir mon devis gratuit",

@@ -85,7 +85,6 @@ const QuoteForm: React.FC = () => {
   const prestation = watch("service") as keyof typeof form.conditionalSections;
   const dateSouhaitee = watch("desired_date");
 
-  console.log(errors);
   const onSubmit = async (data: QuoteFormData) => {
     setStatus("idle");
 

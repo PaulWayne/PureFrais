@@ -11,4 +11,5 @@ export interface Footer {
     twitter: string;
     instagram: string;
   };
+  zone_intervention: string;
 }

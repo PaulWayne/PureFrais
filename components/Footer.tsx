@@ -36,6 +36,10 @@ const Footer: React.FC<Props> = ({ footer }) => {
             </a>
           </div>
 
+          <div>
+            <p className="font-semibold text-gray-400">Zone d'intervention</p>
+            <span>{footer.zone_intervention}</span>
+          </div>
           {/* Socials */}
           <div>
             <p className="font-semibold text-gray-400">Réseaux Sociaux</p>

@@ -27,7 +27,7 @@ const OurTeamSection: React.FC<HomePageTeam> = ({
 }) => {
   return (
     <motion.section
-      className="bg-soft-teal py-20 lg:py-28"
+      className="bg-soft-teal py-10 lg:py-15"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
@@ -100,28 +100,6 @@ const OurTeamSection: React.FC<HomePageTeam> = ({
             ))}
           </motion.div>
         </div>
-
-        {/* Clients */}
-        <motion.div
-          className="flex items-center justify-center flex-wrap gap-x-12 sm:gap-x-16 gap-y-8"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <span className="font-bold text-lg text-brand-dark-blue mr-4">
-            Nos Clients
-          </span>
-          <hr className="w-16 border-gray-300 hidden sm:block" />
-          {clients.map((client, index) => (
-            <img
-              key={index}
-              src={client.logo}
-              alt={client.name}
-              className="h-5 sm:h-6 opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300"
-            />
-          ))}
-        </motion.div>
       </div>
     </motion.section>
   );

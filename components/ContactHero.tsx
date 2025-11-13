@@ -12,7 +12,7 @@ const ContactHero: React.FC = () => {
     >
       <div className="container mx-auto px-4 lg:px-8">
         <h1 className="text-4xl lg:text-5xl font-extrabold text-brand-dark-blue">
-          Contactez-nous
+          Nous sommes à votre écoute
         </h1>
         <div className="text-gray-500 mt-2">
           <i className="fas fa-chevron-down"></i>

@@ -1,6 +1,4 @@
-
-import QuoteForm from '@/components/QuoteForm';
-import React from 'react';
+import QuoteForm from "@/components/QuoteForm";
 
 export default function QuotePage() {
   return (
